@@ -54,3 +54,85 @@ api.exe -path configs/api.toml
 ```
 go get -u github.com/gorilla/mux
 ```
+
+
+
+## Database connection and migration schemes
+
+### Step 9. Libraries to work with databases
+```database/sql```
+```sqlx```
+```gosql```
+
+### Step 10. Initialize database
+```storage/storage.go```
+Purpose of this model is:
+* Instance of DB
+* constructor of DB
+* public method Open (setup connection)
+* public method Close (close connection)
+
+
+### Step 11. Initialize Storage
+```storage.go```
+The main problem lies inside the Open method, because in fact the low-level sql.Open is "lazy" (establishes a connection to the database only when the first query is made)
+
+```config.go```
+Contains a config instance and a constructor. The config attribute is only a connection string of the form :
+```
+"host=localhost port=5432 user=postgres password=postgres dbname=restapi sslmode=disable"
+```
+
+### Step 12. Add DB to API
+Add new attribute storage
+```
+//Base API server instance description
+type API struct {
+	//UNEXPORTED FIELD!
+	config *Config
+	logger *logrus.Logger
+	router *mux.Router
+	storage *storage.Storage
+}
+```
+
+Add new configurator:
+```
+//Configure storage (storage API)
+func (a *API) configreStorageField() error {
+	storage := storage.New(a.config.Storage)
+	if err := storage.Open(); err != nil {
+		return err
+	}
+	a.storage = storage
+	return nil
+}
+
+```
+
+### Step 13. Initial migration
+
+#### For windows:
+First install Scoop ```scoop```
+* Open PowerShell: ```Set-ExecutionPolicy RemoteSigned -scope CurrentUser``` and ```Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')```
+
+After installation ```scoop``` run: ```scoop install migrate```
+
+#### For linux 
+* Run ```$ curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz```
+* Then move it to GOPATH ```mv migrate.linux-amd64 $GOPATH/bin/migrate```
+
+### Step 13.1 Create migration repository
+This repository will hold up/down pairs of sql migration requests to the database.
+```
+migrate create -ext sql -dir migrations UsersCreationMigration
+```
+
+### Step 13.2 Create up/down sql files
+Look ```migrations/....up.sql``` and ```migrations/...down.sql```
+
+### Setp 13.3 Apply migrations
+```
+migrate -path migrations -database "postgres://localhost:5432/restapi?sslmode=disable&user=postgres&password=postgres" up
+```
+
