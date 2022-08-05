@@ -17,6 +17,7 @@ func (api *API) configerLoggerField() error {
 
 	api.logger.SetLevel(logLevel)
 	return nil
+
 }
 
 func (api *API) configerRouterField() {
