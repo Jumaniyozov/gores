@@ -4,4 +4,4 @@ logger_level = "debug"
 
 
 [storage]
-database_uri = "host=localhost port=5432 user=postgres password=123456qwe@#! dbname=gores sslmode=disable"
+database_uri = "host=localhost port=5432 user=postgres password=123456qwe dbname=gores sslmode=disable"

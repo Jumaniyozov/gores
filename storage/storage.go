@@ -6,8 +6,10 @@ import (
 )
 
 type Storage struct {
-	config *Config
-	db     *sql.DB
+	config            *Config
+	db                *sql.DB
+	userRepository    *UserRepository
+	articleRepository *ArticleRepository
 }
 
 func New(config *Config) *Storage {
@@ -33,6 +35,26 @@ func (storage *Storage) Open() error {
 func (storage *Storage) Close() error {
 	if err := storage.db.Close(); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (storage *Storage) User() *UserRepository {
+	if storage.userRepository != nil {
+		return storage.userRepository
+	}
+	storage.userRepository = &UserRepository{
+		storage: storage,
+	}
+	return nil
+}
+
+func (storage *Storage) Article() *ArticleRepository {
+	if storage.articleRepository != nil {
+		return storage.articleRepository
+	}
+	storage.articleRepository = &ArticleRepository{
+		storage: storage,
 	}
 	return nil
 }
