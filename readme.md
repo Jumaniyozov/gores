@@ -143,7 +143,7 @@ migrate -path migrations -database "postgres://localhost:5432/restapi?sslmode=di
 To execute revert ```migrate -path migrations -database "postgres://localhost:5432/restapi?sslmode=disable&user=postgres&password=postgres" down```
 
 
-### Шаг 1. Новая миграция
+### Step 1. New migration
 Open file ```migrations/.....up.sql```
 ```
 CREATE TABLE users (
@@ -440,4 +440,56 @@ func (a *API) configreRouterField() {
 
 Create file ```internal/app/api/handlers.go```
 ```
+```
+
+## Implementing handlers
+
+```
+internal/app/api/handlers.go
+```
+
+Inside define 2 entities:
+```
+package api
+
+import "net/http"
+
+// Auxiliary structure for message formation
+type Message struct {
+	StatusCode int    `json:"status_code"`
+	Message    string `json:"message"`
+	IsError    bool   `json:"is_error"`
+}
+
+func initHeaders(writer http.ResponseWriter) {
+	writer.Header().Set("Content-Type", "application/json")
+}
+
+```
+
+### Step 1. Implementing handler GetAllArticles
+```
+// Returns all articles from the database at the moment
+func (api *API) GetAllArticles(writer http.ResponseWriter, req *http.Request) {
+	// Initializing Headers
+	initHeaders(writer)
+	// Logging the moment when request processing starts
+	api.logger.Info("Get All Artiles GET /api/v1/articles")
+	// Trying to get something from the database
+	articles, err := api.storage.Article().SelectAll()
+	if err != nil {
+		// What do we do if there was an error at the connection stage?
+		api.logger.Info("Error while Articles.SelectAll : ", err)
+		msg := Message{
+			StatusCode: 501,
+			Message:    "We have some troubles to accessing database. Try again later",
+			IsError:    true,
+		}
+		writer.WriteHeader(501)
+		json.NewEncoder(writer).Encode(msg)
+		return
+	}
+	writer.WriteHeader(200)
+	json.NewEncoder(writer).Encode(articles)
+}
 ```

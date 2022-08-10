@@ -16,7 +16,11 @@ var (
 
 func (ur *UserRepository) Create(u *models.User) (*models.User, error) {
 	query := fmt.Sprintf("INSERT INTO %s (login, password) VALUES ($1, $2) RETURNING id", tableUser)
-	if err := ur.storage.db.QueryRow(query, u.Login, u.Password).Scan(&u.ID); err != nil {
+	if err := ur.storage.db.QueryRow(
+		query,
+		u.Login,
+		u.Password,
+	).Scan(&u.ID); err != nil {
 		return nil, err
 	}
 
@@ -28,7 +32,7 @@ func (ur *UserRepository) FindByLogin(login string) (*models.User, bool, error) 
 	var found bool
 
 	if err != nil {
-		return nil, false, err
+		return nil, found, err
 	}
 
 	var userFound *models.User

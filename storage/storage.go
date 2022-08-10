@@ -3,6 +3,7 @@ package storage
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 type Storage struct {
@@ -28,25 +29,25 @@ func (storage *Storage) Open() error {
 		return err
 	}
 	storage.db = db
+	log.Println("Successfully connected to db.")
 
 	return nil
 }
 
-func (storage *Storage) Close() error {
-	if err := storage.db.Close(); err != nil {
-		return err
-	}
-	return nil
+func (storage *Storage) Close() {
+	storage.db.Close()
 }
 
 func (storage *Storage) User() *UserRepository {
 	if storage.userRepository != nil {
 		return storage.userRepository
 	}
+
 	storage.userRepository = &UserRepository{
 		storage: storage,
 	}
-	return nil
+
+	return storage.userRepository
 }
 
 func (storage *Storage) Article() *ArticleRepository {
@@ -56,5 +57,5 @@ func (storage *Storage) Article() *ArticleRepository {
 	storage.articleRepository = &ArticleRepository{
 		storage: storage,
 	}
-	return nil
+	return storage.articleRepository
 }

@@ -32,5 +32,7 @@ func main() {
 
 	server := api.New(config)
 
-	log.Fatal(server.Start())
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
 }
