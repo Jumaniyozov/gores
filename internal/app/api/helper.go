@@ -1,8 +1,10 @@
 package api
 
 import (
+	"github.com/jumaniyozov/gores/internal/app/middleware"
 	"github.com/jumaniyozov/gores/storage"
 	"github.com/sirupsen/logrus"
+	"net/http"
 )
 
 var (
@@ -24,10 +26,15 @@ func (api *API) configerLoggerField() error {
 
 func (api *API) configerRouterField() {
 	api.router.HandleFunc(prefix+"/articles", api.GetAllArticles).Methods("GET")
-	api.router.HandleFunc(prefix+"/articles/{id}", api.GetArticleByID).Methods("GET")
-	api.router.HandleFunc(prefix+"/articles/{id}", api.DeleteArticleByID).Methods("DELETE")
 	api.router.HandleFunc(prefix+"/articles", api.PostArticle).Methods("POST")
+
+	api.router.Handle(prefix+"/articles"+"/{id}", middleware.JwtMiddleware.Handler(
+		http.HandlerFunc(api.GetArticleByID),
+	))
+	//api.router.HandleFunc(prefix+"/articles/{id}", api.GetArticleByID).Methods("GET")
+	api.router.HandleFunc(prefix+"/articles/{id}", api.DeleteArticleByID).Methods("DELETE")
 	api.router.HandleFunc(prefix+"/user/register", api.PostUserRegister).Methods("POST")
+	api.router.HandleFunc(prefix+"/user/auth", api.PostToAuth).Methods("POST")
 }
 
 func (api *API) configerStorageField() error {
